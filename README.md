@@ -8,10 +8,7 @@ A Neovim plugin for [Mago](https://mago.carthage.software/), the blazing fast PH
 - **Lint PHP files** with Mago's powerful linter
 - **Native diagnostics** using Neovim's built-in diagnostic system
 - **LSP Code Actions** - Apply fixes via native `vim.lsp.buf.code_action()`
-- **Auto-fix** lint issues automatically
-- **Rule management** - list, explain, and filter linting rules
 - **Format/Lint on save** (optional)
-- **Format visual selections** or ranges
 - **Auto-detection** of Mago executable (project or global)
 
 ## Requirements
@@ -41,19 +38,8 @@ Default configuration:
 
 ```lua
 require('mago').setup({
-  -- Formatter
-  format_on_save = false,          -- Auto-format on save
-
-  -- Linter
-  lint_on_save = false,            -- Auto-lint on save
-
-  -- LSP Integration
-  enable_lsp_code_actions = true,  -- Enable code actions integration
-
-  -- Shared
-  mago_path = nil,                 -- Custom mago path (nil = auto-detect)
-  notify_on_error = true,          -- Show vim.notify on error
-  quickfix_on_error = true,        -- Populate quickfix on error
+  format_on_save = true,          -- Auto-format on save
+  lint_on_save = true,            -- Auto-lint on save
 })
 ```
 
@@ -66,18 +52,6 @@ require('mago').setup({
 #### Linter
 
 - `lint_on_save` (boolean): Automatically lint PHP files when saving
-
-#### LSP Integration
-
-- `enable_lsp_code_actions` (boolean): Enable code actions integration (default: true)
-  - Provides "Fix all" and "Fix [RULE]" actions via `vim.lsp.buf.code_action()`
-  - Works with any code action UI (telescope, fzf-lua, native)
-
-#### Shared
-
-- `mago_path` (string|nil): Custom path to Mago executable. If `nil`, auto-detects from `vendor/bin/mago` or global `mago`
-- `notify_on_error` (boolean): Show notification when operations fail
-- `quickfix_on_error` (boolean): Populate quickfix list with errors (formatter only)
 
 ## Usage
 
@@ -254,16 +228,6 @@ Use the `:MagoCodeAction` command to show only Mago fixes:
 :MagoCodeAction
 ```
 
-#### Disable Code Actions
-
-To disable code actions integration:
-
-```lua
-require('mago').setup({
-  enable_lsp_code_actions = false,
-})
-```
-
 ## Integration with Other Plugins
 
 ### conform.nvim
@@ -288,7 +252,6 @@ require('conform').setup({
 ## How It Works
 
 1. **Executable Detection**: The plugin searches for Mago in this order:
-   - Custom `mago_path` from config
    - `vendor/bin/mago` in your project (searches upward from current file)
    - Global `mago` in `$PATH`
 
@@ -302,13 +265,6 @@ Run `:MagoInfo` to check if Mago is detected. If not:
 
 - Install globally: Follow [Mago installation guide](https://mago.carthage.software/)
 - Install via Composer: `composer require --dev carthage/mago`
-- Set custom path:
-
-  ```lua
-  require('mago').setup({
-    mago_path = '/path/to/mago',
-  })
-  ```
 
 ### Formatting errors
 

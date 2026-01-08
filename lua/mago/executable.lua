@@ -3,23 +3,7 @@ local M = {}
 -- Find mago executable
 -- Returns: path to mago executable or nil
 function M.find()
-  local config = require('mago.config').get()
-
-  -- 1. Check if custom path is set in config
-  if config.mago_path then
-    if vim.fn.executable(config.mago_path) == 1 then
-      return config.mago_path
-    else
-      vim.notify(
-        string.format('[mago.nvim] Custom mago_path is not executable: %s', config.mago_path),
-        vim.log.levels.WARN
-      )
-      return nil
-    end
-  end
-
-  -- 2. Check for vendor/bin/mago (Composer install)
-  -- Search upward from current buffer's directory
+  -- Check for vendor/bin/mago (Composer install)
   local vendor_mago = vim.fn.findfile('vendor/bin/mago', '.;')
   if vendor_mago ~= '' then
     local full_path = vim.fn.fnamemodify(vendor_mago, ':p')
@@ -28,7 +12,7 @@ function M.find()
     end
   end
 
-  -- 3. Check for global mago in PATH
+  -- Check for global mago in PATH
   if vim.fn.executable 'mago' == 1 then
     return 'mago'
   end

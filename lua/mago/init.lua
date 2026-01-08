@@ -15,10 +15,7 @@ function M.setup(opts)
     M.setup_lint_on_save()
   end
 
-  -- Setup LSP integrations (code actions)
-  if config.get().enable_lsp_code_actions ~= false then
-    require('mago.lsp').setup()
-  end
+  require('mago.lsp').setup()
 end
 
 -- Set up auto-format on save for PHP files
