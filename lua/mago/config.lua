@@ -7,7 +7,9 @@ M.defaults = {
 
   -- Linter
   lint_on_save = false, -- Auto-lint on save
-  lint_severity = 'hint', -- Minimum severity: error/warning/info/hint
+
+  -- LSP Integration
+  enable_lsp_code_actions = true, -- Enable code actions integration
 
   -- Shared
   mago_path = nil, -- Custom mago path (nil = auto-detect)

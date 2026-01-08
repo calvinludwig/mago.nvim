@@ -7,6 +7,7 @@ A Neovim plugin for [Mago](https://mago.carthage.software/), the blazing fast PH
 - **Format PHP files** with Mago's opinionated formatter
 - **Lint PHP files** with Mago's powerful linter
 - **Native diagnostics** using Neovim's built-in diagnostic system
+- **LSP Code Actions** - Apply fixes via native `vim.lsp.buf.code_action()`
 - **Auto-fix** lint issues automatically
 - **Rule management** - list, explain, and filter linting rules
 - **Format/Lint on save** (optional)
@@ -41,16 +42,18 @@ Default configuration:
 ```lua
 require('mago').setup({
   -- Formatter
-  format_on_save = false,     -- Auto-format on save
+  format_on_save = false,          -- Auto-format on save
 
   -- Linter
-  lint_on_save = false,       -- Auto-lint on save
-  lint_severity = 'hint',     -- Minimum severity: error/warning/info/hint
+  lint_on_save = false,            -- Auto-lint on save
+
+  -- LSP Integration
+  enable_lsp_code_actions = true,  -- Enable code actions integration
 
   -- Shared
-  mago_path = nil,            -- Custom mago path (nil = auto-detect)
-  notify_on_error = true,     -- Show vim.notify on error
-  quickfix_on_error = true,   -- Populate quickfix on error
+  mago_path = nil,                 -- Custom mago path (nil = auto-detect)
+  notify_on_error = true,          -- Show vim.notify on error
+  quickfix_on_error = true,        -- Populate quickfix on error
 })
 ```
 
@@ -63,11 +66,12 @@ require('mago').setup({
 #### Linter
 
 - `lint_on_save` (boolean): Automatically lint PHP files when saving
-- `lint_severity` (string): Minimum severity level to show diagnostics
-  - `"error"` - Show only errors
-  - `"warning"` - Show warnings and errors
-  - `"info"` - Show info, warnings, and errors
-  - `"hint"` - Show all diagnostics (default)
+
+#### LSP Integration
+
+- `enable_lsp_code_actions` (boolean): Enable code actions integration (default: true)
+  - Provides "Fix all" and "Fix [RULE]" actions via `vim.lsp.buf.code_action()`
+  - Works with any code action UI (telescope, fzf-lua, native)
 
 #### Shared
 
@@ -92,6 +96,7 @@ require('mago').setup({
 - `:MagoLintOnly <rules>` - Lint with specific rules only (comma-separated)
 - `:MagoClearDiagnostics` - Clear linting diagnostics for current buffer
 - `:MagoToggleLintOnSave` - Toggle lint on save
+- `:MagoCodeAction` - Show Mago code actions at cursor (filters to Mago fixes only)
 
 #### Rule Management
 
@@ -114,6 +119,9 @@ vim.keymap.set('v', '<leader>mf', '<cmd>MagoFormatRange<cr>', { desc = 'Mago for
 -- Linting
 vim.keymap.set('n', '<leader>ml', '<cmd>MagoLint<cr>', { desc = 'Mago lint' })
 vim.keymap.set('n', '<leader>mF', '<cmd>MagoLintFix<cr>', { desc = 'Mago lint fix' })
+
+-- Code Actions
+vim.keymap.set('n', '<leader>ma', vim.lsp.buf.code_action, { desc = 'Code action' })
 
 -- Rule management
 vim.keymap.set('n', '<leader>mr', '<cmd>MagoListRules<cr>', { desc = 'Mago list rules' })
@@ -148,6 +156,7 @@ Or toggle dynamically:
 ### Linting
 
 The linter uses Neovim's built-in diagnostic system to display issues with:
+
 - **Virtual text** - Inline error messages
 - **Signs** - Icons in the gutter
 - **Underlines** - Highlighting problematic code
@@ -179,13 +188,79 @@ This will automatically fix issues that Mago can resolve, reload the buffer, and
 :MagoExplainRule <rule_code>      " Show detailed explanation
 ```
 
-#### Severity Filtering
+### Code Actions
 
-Configure the minimum severity level to display:
+Mago.nvim integrates with Neovim's native LSP code action system, allowing you to apply fixes through the standard `vim.lsp.buf.code_action()` interface.
+
+#### Triggering Code Actions
+
+Position your cursor on a line with a diagnostic and run:
+
+```vim
+:lua vim.lsp.buf.code_action()
+```
+
+Or use your configured keybinding (e.g., `<leader>ca` or `<leader>ma`).
+
+#### Available Actions
+
+When triggered on a PHP file with mago diagnostics, you'll see:
+
+1. **Fix [RULE_CODE]: description** - Fix the specific diagnostic at cursor position
+   - Runs `mago lint --fix --only {rule_code}` for targeted fixes
+   - Only appears for diagnostics with rule codes
+
+2. **Fix all issues at cursor (N rules)** - Fix all diagnostics at cursor position
+   - Runs `mago lint --fix --only rule1,rule2,rule3`
+   - Only appears when cursor has multiple different rule violations
+   - Uses mago's comma-separated --only syntax
+
+3. **Fix all errors/warnings/info/hints (N issues, M rules)** - Fix by severity level
+   - Runs `mago lint --fix --only rule1,rule2,...` for all rules at that severity
+   - Groups diagnostics by severity (Error, Warning, Info, Hint)
+   - Useful for addressing high-priority issues first
+
+4. **Fix all issues with Mago (N issues)** - Fix all linting issues in the file
+   - Runs `mago lint --fix` on the entire file
+   - Always available when diagnostics exist
+
+**Example code action menu:**
+
+```
+Available code actions:
+  1. Fix [no-unused-variable]: Remove unused variable $foo
+  2. Fix [no-empty]: Remove empty block
+  3. Fix all issues at cursor (2 rules)
+  4. Fix all errors (5 issues, 3 rules)
+  5. Fix all warnings (2 issues, 1 rule)
+  6. Fix all issues with Mago (7 issues)
+```
+
+#### Integration with Code Action UIs
+
+Mago code actions work seamlessly with:
+
+- Native `vim.ui.select`
+- [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) with `telescope-ui-select`
+- [fzf-lua](https://github.com/ibhagwan/fzf-lua)
+- [dressing.nvim](https://github.com/stevearc/dressing.nvim)
+- Any other code action UI plugin
+
+#### Filter to Mago Actions Only
+
+Use the `:MagoCodeAction` command to show only Mago fixes:
+
+```vim
+:MagoCodeAction
+```
+
+#### Disable Code Actions
+
+To disable code actions integration:
 
 ```lua
 require('mago').setup({
-  lint_severity = 'warning',  -- Only show warnings and errors
+  enable_lsp_code_actions = false,
 })
 ```
 

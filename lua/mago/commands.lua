@@ -32,7 +32,6 @@ vim.api.nvim_create_user_command('MagoInfo', function()
     print ''
     print '--- Linter ---'
     print('Lint on save: ' .. tostring(config.lint_on_save))
-    print('Lint severity: ' .. config.lint_severity)
 
     -- Show diagnostic count for current buffer
     local ns = require('mago.linter').get_namespace()
@@ -120,4 +119,15 @@ vim.api.nvim_create_user_command('MagoToggleLintOnSave', function()
   require('mago').toggle_lint_on_save()
 end, {
   desc = 'Toggle Mago lint on save',
+})
+
+-- :MagoCodeAction - Show Mago code actions at cursor
+vim.api.nvim_create_user_command('MagoCodeAction', function()
+  vim.lsp.buf.code_action {
+    filter = function(action)
+      return action.title and action.title:match '^Fix.*Mago'
+    end,
+  }
+end, {
+  desc = 'Show Mago code actions at cursor',
 })

@@ -10,11 +10,10 @@ end
 -- Register Mago as an LSP-compatible formatter
 -- This allows it to work with vim.lsp.buf.format() and other LSP tools
 function M.setup()
-  -- Note: This is a placeholder for future LSP integration
-  -- Users can currently integrate with conform.nvim or null-ls
-  -- by following the examples in the README
+  -- Setup code actions provider
+  require('mago.code_actions').setup()
 
-  -- For direct vim.lsp.buf.format() integration, users should configure
+  -- Note: For direct vim.lsp.buf.format() integration, users should configure
   -- their LSP client to use Mago as the formatter
 end
 
