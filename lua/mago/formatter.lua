@@ -9,7 +9,7 @@ function M.format_buffer(bufnr, start_line, end_line)
   bufnr = bufnr or 0
 
   -- Get mago executable
-  local executable = require('mago.executable')
+  local executable = require 'mago.executable'
   local mago_path = executable.get_or_error()
   if not mago_path then
     return false
@@ -32,10 +32,7 @@ function M.format_buffer(bufnr, start_line, end_line)
   local cursor_pos = vim.api.nvim_win_get_cursor(win)
 
   -- Run mago format with stdin
-  local result = vim.system(
-    { mago_path, 'fmt', '--stdin-input' },
-    { stdin = input, text = true }
-  ):wait()
+  local result = vim.system({ mago_path, 'fmt', '--stdin-input' }, { stdin = input, text = true }):wait()
 
   -- Handle result
   if result.code == 0 then
@@ -56,7 +53,7 @@ function M.format_buffer(bufnr, start_line, end_line)
     local new_line_count = #new_lines
     local adjusted_cursor = {
       math.min(cursor_pos[1], new_line_count),
-      cursor_pos[2]
+      cursor_pos[2],
     }
     pcall(vim.api.nvim_win_set_cursor, win, adjusted_cursor)
 
@@ -64,7 +61,7 @@ function M.format_buffer(bufnr, start_line, end_line)
     return true
   else
     -- Formatting failed
-    local errors = require('mago.errors')
+    local errors = require 'mago.errors'
     errors.handle(result.stderr, bufnr)
     return false
   end

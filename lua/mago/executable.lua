@@ -29,7 +29,7 @@ function M.find()
   end
 
   -- 3. Check for global mago in PATH
-  if vim.fn.executable('mago') == 1 then
+  if vim.fn.executable 'mago' == 1 then
     return 'mago'
   end
 
@@ -43,9 +43,9 @@ function M.get_or_error()
 
   if not mago_path then
     vim.notify(
-      '[mago.nvim] Mago executable not found.\n' ..
-      'Install it globally or via Composer in your project:\n' ..
-      '  composer require --dev carthage/mago',
+      '[mago.nvim] Mago executable not found.\n'
+        .. 'Install it globally or via Composer in your project:\n'
+        .. '  composer require --dev carthage/mago',
       vim.log.levels.ERROR
     )
     return nil
@@ -65,7 +65,7 @@ function M.get_version(mago_path)
 
   if result.code == 0 then
     -- Extract version from output (format may vary)
-    local version = result.stdout:match('[%d%.]+') or result.stdout:gsub('\n', '')
+    local version = result.stdout:match '[%d%.]+' or result.stdout:gsub('\n', '')
     return version
   end
 

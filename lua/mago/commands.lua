@@ -17,21 +17,21 @@ end, {
 
 -- :MagoInfo - Show plugin and Mago information
 vim.api.nvim_create_user_command('MagoInfo', function()
-  local exe = require('mago.executable')
+  local exe = require 'mago.executable'
   local config = require('mago.config').get()
   local path = exe.find()
 
   if path then
     local version = exe.get_version(path)
-    print('=== Mago.nvim Info ===')
+    print '=== Mago.nvim Info ==='
     print('Mago path: ' .. path)
     print('Version: ' .. (version or 'unknown'))
     print('Format on save: ' .. tostring(config.format_on_save))
   else
-    print('=== Mago.nvim Info ===')
-    print('Mago executable: NOT FOUND')
-    print('Install Mago globally or via Composer:')
-    print('  composer require --dev carthage/mago')
+    print '=== Mago.nvim Info ==='
+    print 'Mago executable: NOT FOUND'
+    print 'Install Mago globally or via Composer:'
+    print '  composer require --dev carthage/mago'
   end
 end, {
   desc = 'Show Mago information',

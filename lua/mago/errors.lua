@@ -11,7 +11,7 @@ function M.parse_error(error_line)
   end
 
   -- Try to parse file:line:col: message format
-  local filename, lnum, col, text = error_line:match('^(.-)%:(%d+)%:(%d+)%:%s*(.*)$')
+  local filename, lnum, col, text = error_line:match '^(.-)%:(%d+)%:(%d+)%:%s*(.*)$'
   if filename and lnum and col and text then
     return {
       filename = filename,
@@ -22,7 +22,7 @@ function M.parse_error(error_line)
   end
 
   -- Try to parse file:line: message format (no column)
-  filename, lnum, text = error_line:match('^(.-)%:(%d+)%:%s*(.*)$')
+  filename, lnum, text = error_line:match '^(.-)%:(%d+)%:%s*(.*)$'
   if filename and lnum and text then
     return {
       filename = filename,
@@ -55,10 +55,7 @@ function M.handle(stderr, bufnr)
     local lines = vim.split(stderr, '\n', { plain = true })
     local first_line = lines[1] or 'Formatting failed'
 
-    vim.notify(
-      string.format('[mago.nvim] %s', first_line),
-      vim.log.levels.ERROR
-    )
+    vim.notify(string.format('[mago.nvim] %s', first_line), vim.log.levels.ERROR)
   end
 
   -- Populate quickfix list
