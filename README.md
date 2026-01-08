@@ -26,9 +26,7 @@ A Neovim plugin for [Mago](https://mago.carthage.software/), the blazing fast PH
 {
   'calvinludwig/mago.nvim',
   ft = 'php',  -- Load only for PHP files
-  opts = {
-    format_on_save = false,  -- Enable auto-format on save
-  },
+  opts = {},
 }
 ```
 
@@ -276,9 +274,8 @@ Run `:MagoInfo` to check if Mago is detected. If not:
 
 Future features planned:
 
-- Async formatting and linting
-- Static analyzer integration
-- Architectural guard integration
+- Analyzer integration
+- Architectural Guard integration
 
 ## Contributing
 
