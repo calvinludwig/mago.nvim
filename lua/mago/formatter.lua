@@ -1,82 +1,96 @@
-local M = {}
+local function get_mago_executable() return require('mago.executable').get_or_error() end
 
--- Format buffer or range
--- bufnr: buffer number (0 = current buffer)
--- start_line: starting line (1-indexed, nil = first line)
--- end_line: ending line (1-indexed, nil = last line)
--- Returns: true on success, false on error
-function M.format_buffer(bufnr, start_line, end_line)
-  bufnr = bufnr or 0
-
-  -- Get mago executable
-  local executable = require 'mago.executable'
-  local mago_path = executable.get_or_error()
-  if not mago_path then
-    return false
-  end
-
-  -- Get buffer lines
-  start_line = start_line or 0
-  end_line = end_line or -1
-
-  local lines = vim.api.nvim_buf_get_lines(bufnr, start_line, end_line, false)
-  local input = table.concat(lines, '\n')
-
-  -- Add trailing newline if buffer is not empty
-  if #lines > 0 then
-    input = input .. '\n'
-  end
-
-  -- Save cursor position
+local function save_cursor_position()
   local win = vim.api.nvim_get_current_win()
   local cursor_pos = vim.api.nvim_win_get_cursor(win)
+  return { win = win, cursor_pos = cursor_pos }
+end
 
-  -- Run mago format with stdin
+local function restore_cursor_position(cursor_state, adjusted_pos)
+  local pos = adjusted_pos or cursor_state.cursor_pos
+  pcall(vim.api.nvim_win_set_cursor, cursor_state.win, pos)
+end
+
+local function handle_format_error(result, bufnr)
+  local errors = require 'mago.errors'
+  errors.handle(result.stderr, bufnr)
+  return false
+end
+
+local function prepare_stdin_input(bufnr)
+  local start_line = 0
+  local end_line = -1
+  local lines = vim.api.nvim_buf_get_lines(bufnr, start_line, end_line, false)
+  local input = table.concat(lines, '\n')
+  if #lines > 0 then input = input .. '\n' end
+  return input
+end
+
+local function process_formatted_output(formatted)
+  if formatted == nil then return nil end
+  if formatted:sub(-1) == '\n' then formatted = formatted:sub(1, -2) end
+  return vim.split(formatted, '\n', { plain = true })
+end
+
+local function apply_buffer_changes(bufnr, new_lines, cursor_state)
+  local start_line = 0
+  local end_line = -1
+  vim.api.nvim_buf_set_lines(bufnr, start_line, end_line, false, new_lines)
+  local new_line_count = #new_lines
+  local adjusted_cursor = {
+    math.min(cursor_state.cursor_pos[1], new_line_count),
+    cursor_state.cursor_pos[2],
+  }
+  restore_cursor_position(cursor_state, adjusted_cursor)
+end
+
+local function format_with_stdin(bufnr)
+  bufnr = bufnr or 0
+  local mago_path = get_mago_executable()
+  if not mago_path then return false end
+
+  local input = prepare_stdin_input(bufnr)
+  local cursor_state = save_cursor_position()
+
   local result = vim.system({ mago_path, 'fmt', '--stdin-input' }, { stdin = input, text = true }):wait()
 
-  -- Handle result
   if result.code == 0 then
-    -- Successfully formatted
-    local formatted = result.stdout
-
-    -- Remove trailing newline if present to avoid extra blank line
-    if formatted:sub(-1) == '\n' then
-      formatted = formatted:sub(1, -2)
-    end
-
-    local new_lines = vim.split(formatted, '\n', { plain = true })
-
-    -- Replace buffer content
-    vim.api.nvim_buf_set_lines(bufnr, start_line, end_line, false, new_lines)
-
-    -- Restore cursor position (adjust if necessary)
-    local new_line_count = #new_lines
-    local adjusted_cursor = {
-      math.min(cursor_pos[1], new_line_count),
-      cursor_pos[2],
-    }
-    pcall(vim.api.nvim_win_set_cursor, win, adjusted_cursor)
-
-    vim.notify('[mago.nvim] Formatted successfully', vim.log.levels.INFO)
+    local new_lines = process_formatted_output(result.stdout)
+    if not new_lines then return false end
+    apply_buffer_changes(bufnr, new_lines, cursor_state)
     return true
   else
-    -- Formatting failed
-    local errors = require 'mago.errors'
-    errors.handle(result.stderr, bufnr)
-    return false
+    return handle_format_error(result, bufnr)
   end
 end
 
--- Format a specific range
--- Convenience wrapper for format_buffer with explicit range
-function M.format_range(bufnr, start_line, end_line)
-  if not start_line or not end_line then
-    vim.notify('[mago.nvim] Invalid range specified', vim.log.levels.ERROR)
-    return false
-  end
+local function format_with_filepath(bufnr, filepath)
+  local mago_path = get_mago_executable()
+  if not mago_path then return false end
 
-  -- Convert to 0-indexed for nvim_buf_get_lines
-  return M.format_buffer(bufnr, start_line - 1, end_line)
+  local cursor_state = save_cursor_position()
+
+  local result = vim.system({ mago_path, 'fmt', filepath }, { text = true }):wait()
+
+  if result.code == 0 then
+    vim.api.nvim_buf_call(bufnr, function() vim.cmd 'edit!' end)
+    restore_cursor_position(cursor_state)
+    return true
+  else
+    return handle_format_error(result, bufnr)
+  end
+end
+
+local M = {}
+
+function M.format_buffer(bufnr)
+  bufnr = bufnr or 0
+  local filepath = vim.api.nvim_buf_get_name(bufnr)
+  local is_modified = vim.bo[bufnr].modified
+
+  if not is_modified and filepath then return format_with_filepath(bufnr, filepath) end
+
+  return format_with_stdin(bufnr)
 end
 
 return M

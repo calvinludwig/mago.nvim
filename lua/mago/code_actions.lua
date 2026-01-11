@@ -9,29 +9,21 @@ local attached_buffers = {}
 -- Fetch and cache fixable rules from mago
 function M.get_fixable_rules()
   -- Return cached result if available
-  if fixable_rules_cache then
-    return fixable_rules_cache
-  end
+  if fixable_rules_cache then return fixable_rules_cache end
 
   local executable = require 'mago.executable'
   local mago_path = executable.find()
 
-  if not mago_path then
-    return nil
-  end
+  if not mago_path then return nil end
 
   -- Run: mago lint --list-rules --json
   local result = vim.system({ mago_path, 'lint', '--list-rules', '--json' }, { text = true }):wait()
 
-  if result.code ~= 0 or not result.stdout then
-    return nil
-  end
+  if result.code ~= 0 or not result.stdout then return nil end
 
   -- Parse JSON
   local success, rules_data = pcall(vim.json.decode, result.stdout)
-  if not success then
-    return nil
-  end
+  if not success then return nil end
 
   -- Build lookup table: { rule_code -> rule } for all rules
   -- Note: For now, we'll assume all rules are potentially fixable
@@ -41,9 +33,7 @@ function M.get_fixable_rules()
 
   for _, rule in ipairs(rules_list) do
     local code = rule.code or rule.name
-    if code then
-      fixable[code] = true
-    end
+    if code then fixable[code] = true end
   end
 
   -- Cache for session
@@ -60,9 +50,7 @@ function M.get_diagnostics_at_cursor(bufnr, line, col)
   -- Filter to diagnostics that overlap the cursor line
   local cursor_diagnostics = {}
   for _, diag in ipairs(all_diagnostics) do
-    if diag.lnum == line then
-      table.insert(cursor_diagnostics, diag)
-    end
+    if diag.lnum == line then table.insert(cursor_diagnostics, diag) end
   end
 
   return cursor_diagnostics
@@ -93,29 +81,10 @@ local function group_diagnostics_by_severity(diagnostics)
   }
 
   for _, diag in ipairs(diagnostics) do
-    if diag.code and diag.severity then
-      table.insert(groups[diag.severity], diag)
-    end
+    if diag.code and diag.severity then table.insert(groups[diag.severity], diag) end
   end
 
   return groups
-end
-
--- Count diagnostics that match any of the given rule codes
-local function count_diagnostics_with_codes(diagnostics, rule_codes)
-  local code_set = {}
-  for _, code in ipairs(rule_codes) do
-    code_set[code] = true
-  end
-
-  local count = 0
-  for _, diag in ipairs(diagnostics) do
-    if diag.code and code_set[diag.code] then
-      count = count + 1
-    end
-  end
-
-  return count
 end
 
 -- Generate code actions for current context
@@ -139,9 +108,7 @@ function M.get_code_actions(bufnr, range)
   -- Get diagnostics at cursor (within range)
   local cursor_diagnostics = {}
   for _, diag in ipairs(all_diagnostics) do
-    if diag.lnum >= range.start.line and diag.lnum <= range['end'].line then
-      table.insert(cursor_diagnostics, diag)
-    end
+    if diag.lnum >= range.start.line and diag.lnum <= range['end'].line then table.insert(cursor_diagnostics, diag) end
   end
 
   -- 1. Individual rule fixes at cursor
@@ -152,9 +119,7 @@ function M.get_code_actions(bufnr, range)
       -- Remove the [CODE] prefix if it exists in the message
       local clean_message = message:gsub('^%[.-%]%s*', '')
       -- Truncate message if too long
-      if #clean_message > 50 then
-        clean_message = clean_message:sub(1, 47) .. '...'
-      end
+      if #clean_message > 50 then clean_message = clean_message:sub(1, 47) .. '...' end
 
       table.insert(actions, {
         title = string.format('Fix [%s]: %s', diag.code, clean_message),
@@ -174,7 +139,11 @@ function M.get_code_actions(bufnr, range)
   local cursor_rule_codes = get_unique_rule_codes(cursor_diagnostics)
   if #cursor_rule_codes > 1 then
     table.insert(actions, {
-      title = string.format('Fix all issues at cursor (%d rule%s)', #cursor_rule_codes, #cursor_rule_codes == 1 and '' or 's'),
+      title = string.format(
+        'Fix all issues at cursor (%d rule%s)',
+        #cursor_rule_codes,
+        #cursor_rule_codes == 1 and '' or 's'
+      ),
       kind = 'quickfix',
       command = {
         title = 'Fix all at cursor with Mago',
@@ -286,9 +255,7 @@ function M.apply_fix(bufnr, rule_codes, filepath)
 
   if result.code == 0 or (result.code == 1 and result.stdout) then
     -- Reload buffer to show changes
-    vim.api.nvim_buf_call(bufnr, function()
-      vim.cmd 'checktime'
-    end)
+    vim.api.nvim_buf_call(bufnr, function() vim.cmd 'checktime' end)
 
     -- Clear old diagnostics
     local linter = require 'mago.linter'
@@ -296,14 +263,11 @@ function M.apply_fix(bufnr, rule_codes, filepath)
 
     -- Re-lint after a short delay
     vim.defer_fn(function()
-      linter.lint_buffer(bufnr)
+      linter.lint(bufnr)
       vim.notify('[mago.nvim] Fix applied successfully', vim.log.levels.INFO)
     end, 100)
   else
-    vim.notify(
-      string.format('[mago.nvim] Fix failed: %s', result.stderr or 'Unknown error'),
-      vim.log.levels.ERROR
-    )
+    vim.notify(string.format('[mago.nvim] Fix failed: %s', result.stderr or 'Unknown error'), vim.log.levels.ERROR)
   end
 end
 
@@ -335,9 +299,7 @@ local function create_mago_lsp_server()
     -- Stub for notifications
   end
 
-  function server.is_closing()
-    return closing
-  end
+  function server.is_closing() return closing end
 
   function server.terminate()
     -- Cleanup
@@ -352,14 +314,10 @@ function M.attach_to_buffer(bufnr)
   bufnr = bufnr or vim.api.nvim_get_current_buf()
 
   -- Avoid attaching multiple times
-  if attached_buffers[bufnr] then
-    return attached_buffers[bufnr]
-  end
+  if attached_buffers[bufnr] then return attached_buffers[bufnr] end
 
   -- Only attach to PHP files
-  if vim.bo[bufnr].filetype ~= 'php' then
-    return nil
-  end
+  if vim.bo[bufnr].filetype ~= 'php' then return nil end
 
   -- Start the minimal LSP client
   local client_id = vim.lsp.start {
@@ -375,9 +333,7 @@ function M.attach_to_buffer(bufnr)
     vim.api.nvim_create_autocmd('BufDelete', {
       buffer = bufnr,
       once = true,
-      callback = function()
-        attached_buffers[bufnr] = nil
-      end,
+      callback = function() attached_buffers[bufnr] = nil end,
     })
   end
 
@@ -396,9 +352,7 @@ function M.setup()
   vim.api.nvim_create_autocmd('FileType', {
     pattern = 'php',
     group = vim.api.nvim_create_augroup('MagoCodeActions', { clear = true }),
-    callback = function(ev)
-      M.attach_to_buffer(ev.buf)
-    end,
+    callback = function(ev) M.attach_to_buffer(ev.buf) end,
   })
 end
 
