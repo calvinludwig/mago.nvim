@@ -1,6 +1,12 @@
 # mago.nvim
 
-A Neovim plugin for [Mago](https://mago.carthage.software/), the blazing fast PHP toolchain written in Rust.
+> **🚧 UNDER CONSTRUCTION - NOT READY FOR USE 🚧**
+>
+> This plugin is currently under active development and is not yet ready for
+> production use.
+
+A Neovim plugin for [Mago](https://mago.carthage.software/), the blazing fast
+PHP toolchain written in Rust.
 
 ## Features
 
