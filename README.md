@@ -39,18 +39,10 @@ PHP toolchain written in Rust.
 
 ### Commands
 
-#### Formatting
-
 - `:MagoFormat` - Format the current buffer
-
-#### Linter
-
 - `:MagoFixAll` - Fix all linting errors in the current buffer
-- `:MagoExplainRule <rule>` - Show detailed explanation of a specific rule
-
-#### Information
-
-- `:MagoInfo` - Show Mago executable path, version, and status
+- `:MagoExplainRule [rule]` - Show detailed explanation of a linter rule (uses cursor diagnostic if no rule specified)
+- `:MagoInfo` - Show Mago executable path, version, and plugin status
 
 ## How It Works
 
