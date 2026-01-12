@@ -7,15 +7,11 @@ function M.find()
   local vendor_mago = vim.fn.findfile('vendor/bin/mago', '.;')
   if vendor_mago ~= '' then
     local full_path = vim.fn.fnamemodify(vendor_mago, ':p')
-    if vim.fn.executable(full_path) == 1 then
-      return full_path
-    end
+    if vim.fn.executable(full_path) == 1 then return full_path end
   end
 
   -- Check for global mago in PATH
-  if vim.fn.executable 'mago' == 1 then
-    return 'mago'
-  end
+  if vim.fn.executable 'mago' == 1 then return 'mago' end
 
   return nil
 end
@@ -41,9 +37,7 @@ end
 -- Get mago version
 -- Returns: version string or nil
 function M.get_version(mago_path)
-  if not mago_path then
-    return nil
-  end
+  if not mago_path then return nil end
 
   local result = vim.system({ mago_path, '--version' }, { text = true }):wait()
 

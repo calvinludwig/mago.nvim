@@ -6,9 +6,7 @@ local M = {}
 --   Error: error message
 -- Returns: { filename, lnum, col, text } or nil
 function M.parse_error(error_line)
-  if not error_line or error_line == '' then
-    return nil
-  end
+  if not error_line or error_line == '' then return nil end
 
   -- Try to parse file:line:col: message format
   local filename, lnum, col, text = error_line:match '^(.-)%:(%d+)%:(%d+)%:%s*(.*)$'
@@ -44,9 +42,7 @@ end
 -- Handle errors from mago
 -- Displays notification and populates quickfix list
 function M.handle(stderr, bufnr)
-  if not stderr or stderr == '' then
-    stderr = 'Unknown error occurred'
-  end
+  if not stderr or stderr == '' then stderr = 'Unknown error occurred' end
 
   -- Show notification
   local lines = vim.split(stderr, '\n', { plain = true })
@@ -62,9 +58,7 @@ function M.handle(stderr, bufnr)
     local entry = M.parse_error(line)
     if entry and entry.text ~= '' then
       -- If no filename, use current buffer
-      if entry.filename == '' and bufnr then
-        entry.bufnr = bufnr
-      end
+      if entry.filename == '' and bufnr then entry.bufnr = bufnr end
       table.insert(qf_entries, entry)
     end
   end
