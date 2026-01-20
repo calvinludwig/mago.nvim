@@ -38,7 +38,18 @@ local function get_diagnostics_from_mago_issues(issues, bufnr)
   return diagnostics
 end
 
+local function uri_can_be_linted(uri)
+  local relative_filepath = require('mago-nvim.support').uri_to_relative_fname(uri)
+  local files = vim.split(require('mago-nvim.run.lint').list_files(), '\n')
+
+  return vim.tbl_contains(files, relative_filepath)
+end
+
 function M.publish(uri, dispatchers)
+  if not uri_can_be_linted(uri) then
+    return
+  end
+
   local filepath = vim.uri_to_fname(uri)
   local bufnr = vim.uri_to_bufnr(uri)
   local issues = require('mago-nvim.run.lint').check(filepath)

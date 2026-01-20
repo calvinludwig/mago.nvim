@@ -29,4 +29,8 @@ function M.fix(filepath, rule)
   return mago().run(cmd)
 end
 
+function M.list_files()
+  return mago().run { 'list-files', '--command', 'linter' }
+end
+
 return M
