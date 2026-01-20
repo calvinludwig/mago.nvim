@@ -68,34 +68,40 @@ local function create_server(dispatchers)
 
     local met = methods[m]
 
-    if met then met(p) end
+    if met then
+      met(p)
+    end
   end
 
-  function server.is_closing() return closing end
+  function server.is_closing()
+    return closing
+  end
 
-  function server.terminate() closing = true end
+  function server.terminate()
+    closing = true
+  end
 
   return server
 end
 
 local function start_mago(bufnr)
-  vim.schedule(
-    function()
-      vim.lsp.start({
-        name = 'mago.nvim',
-        cmd = create_server,
-        root_dir = vim.fn.getcwd(),
-      }, {
-        bufnr = bufnr,
-      })
-    end
-  )
+  vim.schedule(function()
+    vim.lsp.start({
+      name = 'mago.nvim',
+      cmd = create_server,
+      root_dir = vim.fn.getcwd(),
+    }, {
+      bufnr = bufnr,
+    })
+  end)
 end
 
 local M = {}
 
 M.setup = function()
-  if vim.bo.filetype == 'php' then start_mago(0) end
+  if vim.bo.filetype == 'php' then
+    start_mago(0)
+  end
 
   vim.api.nvim_create_autocmd('FileType', {
     pattern = 'php',

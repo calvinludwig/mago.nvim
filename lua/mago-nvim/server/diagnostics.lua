@@ -32,7 +32,9 @@ local function convert_issue_to_diagnostic(issue, bufnr)
 end
 
 local function get_diagnostics_from_mago_issues(issues, bufnr)
-  local diagnostics = vim.tbl_map(function(issue) return convert_issue_to_diagnostic(issue, bufnr) end, issues or {})
+  local diagnostics = vim.tbl_map(function(issue)
+    return convert_issue_to_diagnostic(issue, bufnr)
+  end, issues or {})
   return diagnostics
 end
 

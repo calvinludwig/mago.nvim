@@ -8,7 +8,18 @@ local function get_issue(d)
 end
 
 local function get_issues_from_buffer(bufnr)
-  local diagnostics = vim.tbl_filter(function(diag) return diag.source == 'mago.nvim' end, vim.diagnostic.get(bufnr))
+  local contains_parse_issue = false
+  local diagnostics = vim.tbl_filter(function(diag)
+    if diag.user_data.lsp.codeDescription == 'parse' then
+      contains_parse_issue = true
+    end
+    return diag.source == 'mago.nvim'
+  end, vim.diagnostic.get(bufnr))
+
+  if contains_parse_issue == true then
+    vim.notify('[mago.nvim] Fix parse errors first', vim.log.levels.ERROR)
+    return {}
+  end
 
   return vim.tbl_map(get_issue, diagnostics or {})
 end
@@ -28,20 +39,25 @@ local function issues_to_list(issues)
 end
 
 function M.retrieve_from_buffer(bufnr)
-  if vim.bo[bufnr].filetype ~= 'php' then return {} end
+  if vim.bo[bufnr].filetype ~= 'php' then
+    return {}
+  end
 
   local cursor_line = vim.api.nvim_win_get_cursor(0)[1]
   local actions = {}
 
   local issues = get_issues_from_buffer(bufnr)
-  local current_line_issues = vim.tbl_filter(function(l) return l.line == cursor_line end, issues)
-  local other_issues = vim.tbl_filter(function(l) return l.line ~= cursor_line end, issues)
+  local current_line_issues = vim.tbl_filter(function(l)
+    return l.line == cursor_line
+  end, issues)
+  local other_issues = vim.tbl_filter(function(l)
+    return l.line ~= cursor_line
+  end, issues)
 
   local current_line_list = issues_to_list(current_line_issues)
-  local other_line_list = vim.tbl_filter(
-    function(x) return vim.tbl_contains(current_line_list, x) == false end,
-    issues_to_list(other_issues)
-  )
+  local other_line_list = vim.tbl_filter(function(x)
+    return vim.tbl_contains(current_line_list, x) == false
+  end, issues_to_list(other_issues))
 
   for _, item in ipairs(current_line_list) do
     table.insert(actions, {

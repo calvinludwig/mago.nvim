@@ -4,8 +4,12 @@ function M.show(lines)
   local height = vim.o.lines
   local win_width = math.floor(width * 0.8)
   local win_height = math.floor(height * 0.8)
-  if win_width > 80 then win_width = 80 end
-  if win_height > #lines then win_height = #lines end
+  if win_width > 80 then
+    win_width = 80
+  end
+  if win_height > #lines then
+    win_height = #lines
+  end
   local row = math.floor((height - win_height) / 2)
   local col = math.floor((width - win_width) / 2)
   local buf = vim.api.nvim_create_buf(false, true)
@@ -36,7 +40,9 @@ function M.show(lines)
     once = true,
     callback = function()
       vim.schedule(function()
-        if vim.api.nvim_win_is_valid(win) then vim.api.nvim_set_current_win(win) end
+        if vim.api.nvim_win_is_valid(win) then
+          vim.api.nvim_set_current_win(win)
+        end
       end)
     end,
   })

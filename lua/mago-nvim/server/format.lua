@@ -8,7 +8,9 @@ function M.format_uri(uri)
 
   if not is_modified and filepath then
     fmt.format_filepath(filepath)
-    vim.api.nvim_buf_call(bufnr, function() vim.cmd 'edit!' end)
+    vim.api.nvim_buf_call(bufnr, function()
+      vim.cmd 'edit!'
+    end)
     return
   end
 
@@ -16,7 +18,9 @@ function M.format_uri(uri)
   local input = table.concat(old_lines, '\n')
 
   local output = fmt.format_stdin(input)
-  if output == nil then return end
+  if output == '' then
+    return
+  end
   local lines = vim.split(output, '\n', { plain = true })
   vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
 end

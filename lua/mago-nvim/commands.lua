@@ -1,13 +1,11 @@
 vim.api.nvim_create_user_command('MagoFormat', function()
   vim.lsp.buf.format { async = true }
-  --
 end, {
   desc = 'Format current buffer with Mago',
 })
 
 vim.api.nvim_create_user_command('MagoLintFix', function()
-  require('mago-nivm.linter').fix_all(0)
-  --
+  require('mago-nvim.server.fixer').fix(0)
 end, {
   desc = 'Fix all linting errors in the current buffer with Mago',
 })

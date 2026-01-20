@@ -11,13 +11,11 @@ function M.fix(bufnr, rule)
     return
   end
 
-  if rule == nil then
-    lint.fix_all(filepath)
-  else
-    lint.fix_rule(filepath, rule)
-  end
+  lint.fix(filepath, rule)
 
-  vim.api.nvim_buf_call(bufnr, function() vim.cmd 'edit!' end)
+  vim.api.nvim_buf_call(bufnr, function()
+    vim.cmd 'edit!'
+  end)
 end
 
 return M
