@@ -13,7 +13,7 @@ local function get_issues_from_buffer(bufnr)
     if diag.user_data.lsp.codeDescription == 'parse' then
       contains_parse_issue = true
     end
-    return diag.source == 'mago.nvim'
+    return diag.source == "Mago's linter"
   end, vim.diagnostic.get(bufnr))
 
   if contains_parse_issue == true then

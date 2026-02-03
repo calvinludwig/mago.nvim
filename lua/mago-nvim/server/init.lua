@@ -1,6 +1,7 @@
 local function create_server(dispatchers)
   local diagnostics = require 'mago-nvim.server.diagnostics'
   local code_actions = require 'mago-nvim.server.code-actions'
+  local analyzer_diagnostics = require 'mago-nvim.server.analyzer-diagnostics'
 
   local server = {}
   local closing = false
@@ -24,7 +25,6 @@ local function create_server(dispatchers)
 
       ['textDocument/codeAction'] = function(params, callback)
         local bufnr = vim.uri_to_bufnr(params.textDocument.uri)
-
         local actions = code_actions.retrieve_from_buffer(bufnr)
         callback(nil, actions)
       end,
@@ -48,13 +48,37 @@ local function create_server(dispatchers)
   function server.notify(m, p)
     local methods = {
       ['textDocument/didOpen'] = function(params)
-        diagnostics.publish(params.textDocument.uri, dispatchers)
-        --
+        local uri = params.textDocument.uri
+        local all_diagnostics = {}
+
+        for _, d in ipairs(diagnostics.get_diagnostics(uri)) do
+          table.insert(all_diagnostics, d)
+        end
+        for _, d in ipairs(analyzer_diagnostics.get_diagnostics(uri)) do
+          table.insert(all_diagnostics, d)
+        end
+
+        dispatchers.notification('textDocument/publishDiagnostics', {
+          uri = uri,
+          diagnostics = all_diagnostics,
+        })
       end,
 
       ['textDocument/didSave'] = function(params)
-        diagnostics.publish(params.textDocument.uri, dispatchers)
-        --
+        local uri = params.textDocument.uri
+        local all_diagnostics = {}
+
+        for _, d in ipairs(diagnostics.get_diagnostics(uri)) do
+          table.insert(all_diagnostics, d)
+        end
+        for _, d in ipairs(analyzer_diagnostics.get_diagnostics(uri)) do
+          table.insert(all_diagnostics, d)
+        end
+
+        dispatchers.notification('textDocument/publishDiagnostics', {
+          uri = uri,
+          diagnostics = all_diagnostics,
+        })
       end,
 
       ['textDocument/didChange'] = function(_)
@@ -127,6 +151,7 @@ M.setup = function()
     local rule = command.arguments[2]
     require('mago-nvim.server.fixer').fix(bufnr, rule)
   end
+
 end
 
 return M

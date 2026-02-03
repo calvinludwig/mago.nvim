@@ -27,7 +27,7 @@ local function convert_issue_to_diagnostic(issue, bufnr)
     severity = severity_map[issue.level],
     message = string.format('[%s] %s', issue.code, issue.message),
     codeDescription = issue.code,
-    source = "Mago's linter",
+    source = "Mago's analyzer",
   }
 end
 
@@ -38,30 +38,23 @@ local function get_diagnostics_from_mago_issues(issues, bufnr)
   return diagnostics
 end
 
-local function uri_can_be_linted(uri)
+local function uri_can_be_analyzed(uri)
   local relative_filepath = require('mago-nvim.support').uri_to_relative_fname(uri)
-  local files = vim.split(require('mago-nvim.run.lint').list_files(), '\n')
+  local files = vim.split(require('mago-nvim.run.analyze').list_files(), '\n')
 
   return vim.tbl_contains(files, relative_filepath)
 end
 
 function M.get_diagnostics(uri)
-  if not uri_can_be_linted(uri) then
+  if not uri_can_be_analyzed(uri) then
     return {}
   end
 
   local filepath = vim.uri_to_fname(uri)
   local bufnr = vim.uri_to_bufnr(uri)
-  local issues = require('mago-nvim.run.lint').check(filepath)
+  local issues = require('mago-nvim.run.analyze').check(filepath)
 
   return get_diagnostics_from_mago_issues(issues, bufnr)
-end
-
-function M.publish(uri, dispatchers)
-  dispatchers.notification('textDocument/publishDiagnostics', {
-    uri = uri,
-    diagnostics = M.get_diagnostics(uri),
-  })
 end
 
 return M
