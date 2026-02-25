@@ -82,4 +82,4 @@ MIT License - see LICENSE file for details
 ## Related Projects
 
 - [Mago](https://mago.carthage.software/) - The Oxidized PHP Toolchain
-- [carthage/mago](https://github.com/carthage/mago) - Mago on GitHub
+- [carthage/mago](https://github.com/carthage-software/mago) - Mago on GitHub
