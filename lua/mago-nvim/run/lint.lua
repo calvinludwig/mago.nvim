@@ -13,6 +13,15 @@ function M.check(filepath)
   return decoded.issues
 end
 
+function M.check_guard(filepath)
+  local output = mago().run { 'guard', '--reporting-format', 'json', filepath }
+  if output == nil or output == '' then
+    return {}
+  end
+  local decoded = vim.json.decode(output)
+  return decoded.issues
+end
+
 function M.explain(rule)
   --
   return mago().run { 'lint', '--explain', rule }
@@ -31,6 +40,10 @@ end
 
 function M.list_files()
   return mago().run { 'list-files', '--command', 'linter' }
+end
+
+function M.list_guard_files()
+  return mago().run { 'list-files', '--command', 'guard' }
 end
 
 return M
