@@ -36,7 +36,27 @@ require('mago-nvim').setup()
 {
   'calvinludwig/mago.nvim',
   ft = 'php',  -- Load only for PHP files
-  opts = {},
+  opts = {
+    logging = {
+      notify = true,
+      write_to_log = false,
+      min_level = 'INFO',
+      log_file = nil,
+    },
+  },
+}
+```
+
+### Configuration
+
+```lua
+require('mago-nvim').setup {
+  logging = {
+    notify = true, -- show vim.notify for stderr messages
+    write_to_log = false, -- append filtered messages to a log file
+    min_level = 'INFO', -- TRACE | DEBUG | INFO | WARN | ERROR
+    log_file = nil, -- defaults to: vim.fn.stdpath('log') .. '/mago.nvim.log'
+  },
 }
 ```
 
