@@ -39,10 +39,15 @@ local function get_diagnostics_from_mago_issues(issues, bufnr)
 end
 
 local function uri_can_be_checked(uri)
+  local filepath = vim.uri_to_fname(uri)
+  if type(filepath) ~= 'string' or filepath == '' then
+    return false
+  end
+
   local relative_filepath = require('mago-nvim.support').uri_to_relative_fname(uri)
   local lint = require 'mago-nvim.run.lint'
-  local lint_files = vim.split(lint.list_files(), '\n')
-  local guard_files = vim.split(lint.list_guard_files(), '\n')
+  local lint_files = vim.split(lint.list_files(filepath), '\n')
+  local guard_files = vim.split(lint.list_guard_files(filepath), '\n')
 
   return vim.tbl_contains(lint_files, relative_filepath) or vim.tbl_contains(guard_files, relative_filepath)
 end

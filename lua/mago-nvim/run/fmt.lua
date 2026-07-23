@@ -6,12 +6,17 @@ end
 
 function M.format_filepath(filepath)
   --
-  mago().run { 'fmt', filepath }
+  mago().run({ 'fmt', filepath }, {
+    filepath = filepath,
+  })
 end
 
-function M.format_stdin(input)
+function M.format_stdin(input, filepath)
   --
-  return mago().run({ 'fmt', '--stdin-input' }, { stdin = input })
+  return mago().run({ 'fmt', '--stdin-input' }, {
+    stdin = input,
+    filepath = filepath,
+  })
 end
 
 return M

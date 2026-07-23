@@ -85,7 +85,15 @@ local function create_server(dispatchers)
 end
 
 local function start_mago(bufnr)
+  if vim.api.nvim_buf_get_name(bufnr) == '' then
+    return
+  end
+
   vim.schedule(function()
+    if vim.api.nvim_buf_get_name(bufnr) == '' then
+      return
+    end
+
     vim.lsp.start({
       name = 'mago.nvim',
       cmd = create_server,

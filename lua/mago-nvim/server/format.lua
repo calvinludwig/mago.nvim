@@ -17,7 +17,7 @@ function M.format_uri(uri)
   local old_lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
   local input = table.concat(old_lines, '\n')
 
-  local output = fmt.format_stdin(input)
+  local output = fmt.format_stdin(input, filepath)
   if output == '' then
     return
   end
