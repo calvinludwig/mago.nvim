@@ -5,7 +5,9 @@ local function mago()
 end
 
 function M.check(filepath)
-  local output = mago().run { 'lint', '--reporting-format', 'json', filepath }
+  local output = mago().run({ 'lint', '--reporting-format', 'json', filepath }, {
+    filepath = filepath,
+  })
   if output == nil or output == '' then
     return {}
   end
@@ -14,7 +16,9 @@ function M.check(filepath)
 end
 
 function M.check_guard(filepath)
-  local output = mago().run { 'guard', '--reporting-format', 'json', filepath }
+  local output = mago().run({ 'guard', '--reporting-format', 'json', filepath }, {
+    filepath = filepath,
+  })
   if output == nil or output == '' then
     return {}
   end
@@ -35,15 +39,21 @@ function M.fix(filepath, rule)
     table.insert(cmd, rule)
   end
 
-  return mago().run(cmd)
+  return mago().run(cmd, {
+    filepath = filepath,
+  })
 end
 
-function M.list_files()
-  return mago().run { 'list-files', '--command', 'linter' }
+function M.list_files(filepath)
+  return mago().run({ 'list-files', '--command', 'linter' }, {
+    filepath = filepath,
+  })
 end
 
-function M.list_guard_files()
-  return mago().run { 'list-files', '--command', 'guard' }
+function M.list_guard_files(filepath)
+  return mago().run({ 'list-files', '--command', 'guard' }, {
+    filepath = filepath,
+  })
 end
 
 return M

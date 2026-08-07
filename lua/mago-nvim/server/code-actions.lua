@@ -1,19 +1,29 @@
 local M = {}
 
+local function get_rule_code(diag)
+  return (diag.user_data and diag.user_data.lsp and diag.user_data.lsp.codeDescription)
+    or diag.codeDescription
+    or diag.code
+end
+
 local function get_issue(d)
   return {
     line = d.lnum + 1,
-    code = d.user_data.lsp.codeDescription,
+    code = get_rule_code(d),
   }
 end
 
 local function get_issues_from_buffer(bufnr)
   local contains_parse_issue = false
+
   local diagnostics = vim.tbl_filter(function(diag)
-    if diag.user_data.lsp.codeDescription == 'parse' then
+    local code = get_rule_code(diag)
+
+    if code == 'parse' then
       contains_parse_issue = true
     end
-    return diag.source == 'mago.nvim'
+
+    return diag.source == 'mago.nvim' and code ~= nil
   end, vim.diagnostic.get(bufnr))
 
   if contains_parse_issue == true then
@@ -21,7 +31,9 @@ local function get_issues_from_buffer(bufnr)
     return {}
   end
 
-  return vim.tbl_map(get_issue, diagnostics or {})
+  return vim.tbl_filter(function(issue)
+    return issue.code ~= nil
+  end, vim.tbl_map(get_issue, diagnostics or {}))
 end
 
 local function issues_to_list(issues)

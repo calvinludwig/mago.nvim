@@ -10,6 +10,10 @@ M.config = {
   },
 }
 
+local function support()
+  return require 'mago-nvim.support'
+end
+
 local function normalize_level(level, fallback)
   if type(level) == 'number' then
     return level
@@ -87,6 +91,14 @@ function M.run(cmd, opts)
   if opts == nil then
     opts = {}
   end
+
+  local filepath = opts.filepath
+  opts.filepath = nil
+
+  if opts.cwd == nil and type(filepath) == 'string' and filepath ~= '' then
+    opts.cwd = support().cwd_from_filepath(filepath)
+  end
+
   table.insert(cmd, 1, M.mago_path)
 
   opts.text = true
